@@ -4,7 +4,7 @@ namespace IEXBase\TronAPI\Provider;
 
 use GuzzleHttp\{Psr7\Request, Client, ClientInterface};
 use Psr\Http\Message\StreamInterface;
-use IEXBase\TronAPI\Exception\{NotFoundException, TronException};
+use IEXBase\TronAPI\Exception\{ApiException, NotFoundException, TronException};
 use IEXBase\TronAPI\Support\Utils;
 
 class HttpProvider implements HttpProviderInterface
@@ -172,7 +172,11 @@ class HttpProvider implements HttpProviderInterface
     protected function decodeBody(StreamInterface $stream, int $status): array
     {
         $decodedBody = json_decode($stream->getContents(),true);
-
+    
+        if (isset($decodedBody[ 'Error' ])) {
+            throw new ApiException($decodedBody[ 'Error' ]);
+        }
+        
         if((string)$stream == 'OK') {
             $decodedBody = [
                 'status'    =>  1
